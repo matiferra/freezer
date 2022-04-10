@@ -1,12 +1,7 @@
 import * as React from 'react';
 import { Text, View, Button, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
-
-const productos = [
-  "frutas",
-  "verduras",
-];
+import productos from '../keys';
 
 export default class ListScreen extends React.Component {
 
@@ -19,14 +14,31 @@ export default class ListScreen extends React.Component {
 
     this.renderProductos = this.renderProductos.bind(this);
     this.recolectar = this.recolectar.bind(this);
+  }
 
+  async getKeys() {
+    try {
+      let keys = await AsyncStorage.getAllKeys()
+      if (keys != null) {
+        return keys
+      }
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   async getData(producto) {
+    let productos = []
     try {
-      let value = await AsyncStorage.getItem(producto)
-      if (value != null) {
-        return value
+      getKeys().then((keys) => {
+        keys.forEach(element => {
+          let data = await AsyncStorage.getItem(JSON.stringify(element))
+          productos.push(data)
+        });
+      })
+      if (productos != null) {
+        console.log(productos)
+        //return value
       }
     } catch (e) {
       console.log(e)
@@ -37,38 +49,41 @@ export default class ListScreen extends React.Component {
     console.log("recargado")
   }
 
+  /*
+prevState => ({
+  recuperados: [value, ...prevState.recuperados],
+  cargando: false
+*/
   recolectar() {
     if (this.state.cargando) {
-      productos.forEach(element => {
-        this.getData(element)
-          .then((value) => {
-            if(value != null){
-              this.setState(
-                prevState => ({
-                  recuperados: [value, ...prevState.recuperados],
-                  cargando: false
-                }))
-            }
-          })
-      })
+      this.getData()
+        .then((data) => {
+          if (data != null) {
+            this.setState({
+              recuperados: data,
+            })
+          }
+        })
     }
   }
 
   renderProductos() {
+    console.log(this.state.recuperados)
     return (
       <ScrollView>
-        {this.state.recuperados.map((producto) => {
-          return (
-            <View key={Math.random()} style={styles.container}>
-              <TouchableOpacity
-                key={Math.random()}
-                style={styles.button}
-                color="#4A88E1">
-                <Text key={Math.random()} style={styles.buttonText}>{producto}</Text>
-              </TouchableOpacity>
-            </View>
-          );
-        })
+        {
+          this.state.recuperados.map((producto) => {
+            return (
+              <View key={Math.random()} style={styles.container}>
+                <TouchableOpacity
+                  key={Math.random()}
+                  style={styles.button}
+                  color="#4A88E1">
+                  <Text key={Math.random()} style={styles.buttonText}>{producto}</Text>
+                </TouchableOpacity>
+              </View>
+            );
+          })
         }
       </ScrollView>
     );

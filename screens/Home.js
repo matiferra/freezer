@@ -3,11 +3,6 @@ import { Text, View, Button } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
-const productos = [
-  "frutas",
-  "verduras",
-];
-
 export default class HomeScreen extends React.Component {
 
   constructor(props) {
